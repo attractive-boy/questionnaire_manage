@@ -66,7 +66,7 @@ export default function Login() {
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
+          <div className="-space-y-px rounded-md">
             <div>
               <label htmlFor="username" className="sr-only">
                 用户名
