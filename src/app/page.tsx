@@ -51,7 +51,7 @@ export default function Login() {
         <div className="text-center">
           <Image
             className="mx-auto h-12 w-auto"
-            src="/next.svg"
+            src="/logo.png"
             alt="Logo"
             width={180}
             height={38}
