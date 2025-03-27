@@ -15,7 +15,7 @@ api.interceptors.request.use(
     // 如果本地存储token，就添加到请求头中
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.token = `${token}`;
     }
     return config;
   },

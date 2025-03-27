@@ -29,11 +29,11 @@ export interface ApiResponse<T> {
 // 登录服务
 export const login = async (params: LoginParams): Promise<ApiResponse<SaTokenInfo>> => {
   try {
-    const response = await api.post<ApiResponse<SaTokenInfo>>('/manager/user/login', params);
-    
+    const response:any = await api.post<ApiResponse<SaTokenInfo>>('/manager/user/login', params);
+    console.log('response==>',response)
     // 如果登录成功，保存token到localStorage
-    if (response.data?.success && response.data?.data?.tokenValue) {
-      localStorage.setItem('token', response.data.data.tokenValue);
+    if (response.success && response.data?.tokenValue) {
+      localStorage.setItem('token', response.data.tokenValue);
     }
     
     return response.data;

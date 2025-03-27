@@ -28,11 +28,11 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await login(formData);
-      
-      if (response.success && response.data?.tokenValue) {
-        // 登录成功，可以跳转到主页或其他页面
-        // router.push('/dashboard'); // 假设登录后跳转到dashboard页面
+      const response : any = await login(formData);
+      console.log(response);
+      if (response.tokenValue) {
+        // 登录成功，跳转到 dashboard 页面
+        router.push('/dashboard')
       } else {
         // 登录失败，显示错误信息
         setError(response.message || '登录失败，请检查用户名和密码');
