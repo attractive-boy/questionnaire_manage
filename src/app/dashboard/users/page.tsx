@@ -1,8 +1,8 @@
 "use client"
-import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
+import { EllipsisOutlined, PlusOutlined,EyeOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
-import { Button, Dropdown, Space, Modal, message } from 'antd';
+import { Button, Dropdown, Space, Modal, message, Descriptions,Tag,Image } from 'antd';
 import { useRef, useState } from 'react';
 import api from '../../../utils/api';
 
@@ -374,36 +374,42 @@ export default () => {
         width={800}
       >
         {currentUser && (
-          <div>
-            <p><strong>姓名：</strong>{currentUser.name}</p>
-            <p><strong>手机号：</strong>{currentUser.phone}</p>
-            <p><strong>年龄段：</strong>
-              {currentUser.ageGroup === '1' ? '3-7岁' : 
-               currentUser.ageGroup === '2' ? '7-12岁' : '-'}
-            </p>
-            <p><strong>处理状态：</strong>
-              {{
-                '0': '审批通过',
-                '1': '资料未提交',
-                '2': '资料已提交，尚未审批',
-                '3': '资料审批不通过',
-                '4': '封号'
-              }[currentUser.processStatus] || '-'}
-            </p>
-            <p>
-              <strong>诊断书：</strong>
+          <>
+            <Descriptions bordered column={2}>
+              <Descriptions.Item label="姓名" span={1}>{currentUser.name}</Descriptions.Item>
+              <Descriptions.Item label="手机号" span={1}>{currentUser.phone}</Descriptions.Item>
+              <Descriptions.Item label="年龄段" span={1}>
+                {currentUser.ageGroup === '1' ? '3-7岁' : 
+                 currentUser.ageGroup === '2' ? '7-12岁' : '-'}
+              </Descriptions.Item>
+              <Descriptions.Item label="处理状态" span={1}>
+                <Space>
+                  {{
+                    '0': <Tag color="success">审批通过</Tag>,
+                    '1': <Tag>资料未提交</Tag>,
+                    '2': <Tag color="processing">资料已提交，尚未审批</Tag>,
+                    '3': <Tag color="error">资料审批不通过</Tag>,
+                    '4': <Tag color="error">封号</Tag>
+                  }[currentUser.processStatus] || '-'}
+                </Space>
+              </Descriptions.Item>
+              <Descriptions.Item label="创建时间" span={2}>{currentUser.createTime}</Descriptions.Item>
               {currentUser.profilePath && (
-                <div style={{ marginTop: '10px' }}>
-                  <img
-                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user/diagnosisBook/${tempCode}`}
-                    style={{ width: '100%', maxHeight: '600px' }}
-                    alt="诊断书预览"
-                  />
-                </div>
+                <Descriptions.Item label="诊断书" span={2}>
+                  <div style={{ marginTop: '10px' }}>
+                    <Image
+                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/user/diagnosisBook/${tempCode}`}
+                      alt="诊断书预览"
+                      style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }}
+                      preview={{
+                        mask: <div><EyeOutlined /> 点击查看大图</div>
+                      }}
+                    />
+                  </div>
+                </Descriptions.Item>
               )}
-            </p>
-            <p><strong>创建时间：</strong>{currentUser.createTime}</p>
-          </div>
+            </Descriptions>
+          </>
         )}
       </Modal>
       <Modal
