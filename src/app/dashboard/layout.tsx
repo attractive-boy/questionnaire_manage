@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ProLayout } from '@ant-design/pro-components';
-import { UserOutlined, FormOutlined, SettingOutlined, FileTextOutlined } from '@ant-design/icons';
+import { UserOutlined, FormOutlined, SettingOutlined, FileTextOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { useRouter, usePathname } from 'next/navigation';
 import { isLoggedIn, logout } from '../../services/auth';
 import api from '../../utils/api';
@@ -29,6 +29,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       path: '/dashboard/assessments',
       name: '答题记录',
       icon: <FileTextOutlined />,
+    },
+    {
+      path: '/dashboard/templates',
+      name: '模板库管理',
+      icon: <DatabaseOutlined />,
     },
     {
       path: '/dashboard/settings',
