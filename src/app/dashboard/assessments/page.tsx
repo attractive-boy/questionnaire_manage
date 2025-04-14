@@ -1,10 +1,11 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { Button, message, Tag, Space, Modal, Table, Descriptions, Form, Input } from 'antd';
-import { Radar } from '@ant-design/charts';
+import { Line } from '@antv/g2plot';
+import { uniq, findIndex } from '@antv/util';
 import api from '../../../utils/api';
 
 type AssessmentRecord = {
@@ -77,7 +78,266 @@ export default function AssessmentsPage() {
     }
   };
 
+  // 存储图表实例的引用
+  const avgChartRef = useRef<Line | null>(null);
+  const scoreChartRef = useRef<Line | null>(null);
+
+  // 渲染平均评估对比图表
+  useEffect(() => {
+    let mounted = true;
+    
+    if (compareData != null && isCompareModalVisible === true) {
+      // 销毁之前的图表实例
+      if (avgChartRef.current) {
+        avgChartRef.current.destroy();
+      }
+      if (scoreChartRef.current) {
+        scoreChartRef.current.destroy();
+      }
+
+      // 格式化平均评估数据
+      const avgData: any[] = [];
+      compareData.nowAvgAssessment.forEach(item => {
+        avgData.push({
+          category: item.name,
+          type: '当前评估',
+          value: item.value
+        });
+      });
+      compareData.oldAvgAssessment.forEach(item => {
+        avgData.push({
+          category: item.name,
+          type: '历史评估',
+          value: item.value
+        });
+      });
+
+      // 格式化评估分数数据
+      const scoreData: any[] = [];
+      compareData.nowAssessmentScore.forEach(item => {
+        scoreData.push({
+          category: item.name,
+          type: '当前评估',
+          value: item.value
+        });
+      });
+      compareData.oldAssessmentScore.forEach(item => {
+        scoreData.push({
+          category: item.name,
+          type: '历史评估',
+          value: item.value
+        });
+      });
+
+      // 颜色配置
+      const COLOR_PLATE = [
+        '#5B8FF9',
+        '#5AD8A6',
+        '#5D7092',
+        '#F6BD16',
+        '#E8684A',
+        '#6DC8EC',
+        '#9270CA',
+        '#FF9D4D',
+        '#269A99',
+        '#FF99C3',
+      ];
+
+      // 初始化平均评估对比图表
+      setTimeout(() => {
+        const avgContainer = document.getElementById('avgAssessmentChart');
+        if (avgContainer && avgContainer.children.length === 0 && avgContainer.clientWidth > 0) {
+          avgContainer.innerHTML = '';
+          const avgChart = new Line(avgContainer, {
+            data: avgData,
+            xField: 'category',
+            yField: 'value',
+            seriesField: 'type',
+            yAxis: {
+              title: {
+                text: '平均分值',
+              },
+              line: {
+                style: {
+                  stroke: '#ddd',
+                  lineWidth: 1,
+                },
+              },
+              tickLine: {
+                style: {
+                  stroke: '#ddd',
+                },
+              },
+              grid: {
+                line: {
+                  style: {
+                    stroke: '#f0f0f0',
+                    lineDash: [4, 4],
+                  },
+                },
+              },
+              label: {
+                autoHide: true,
+                autoRotate: false,
+              },
+            },
+            xAxis: {
+              title: {
+                text: '评估维度',
+              },
+              line: {
+                style: {
+                  stroke: '#ddd',
+                  lineWidth: 1,
+                },
+              },
+              tickLine: {
+                style: {
+                  stroke: '#ddd',
+                },
+              },
+              label: {
+                autoHide: true,
+                autoRotate: false,
+                offset: 10,
+              },
+              grid: null,
+            },
+            legend: {
+              position: 'top',
+            },
+            smooth: true,
+            animation: {
+              appear: {
+                animation: 'fade-in',
+                duration: 1000,
+              },
+            },
+            color: COLOR_PLATE,
+            point: {
+              size: 5,
+              shape: 'circle',
+              style: {
+                fill: 'white',
+                stroke: '#5B8FF9',
+                lineWidth: 2,
+              },
+            },
+          });
+          avgChart.render();
+          avgChartRef.current = avgChart;
+        }
+      }, 100);
+
+      // 初始化评估分数对比图表
+      setTimeout(() => {
+        const scoreContainer = document.getElementById('assessmentScoreChart');
+        if (scoreContainer && scoreContainer.children.length === 0 && scoreContainer.clientWidth > 0) {
+          scoreContainer.innerHTML = '';
+          const scoreChart = new Line(scoreContainer, {
+            data: scoreData,
+            xField: 'category',
+            yField: 'value',
+            seriesField: 'type',
+            yAxis: {
+              title: {
+                text: '分数',
+              },
+              line: {
+                style: {
+                  stroke: '#ddd',
+                  lineWidth: 1,
+                },
+              },
+              tickLine: {
+                style: {
+                  stroke: '#ddd',
+                },
+              },
+              grid: {
+                line: {
+                  style: {
+                    stroke: '#f0f0f0',
+                    lineDash: [4, 4],
+                  },
+                },
+              },
+              label: {
+                autoHide: true,
+                autoRotate: false,
+              },
+            },
+            xAxis: {
+              title: {
+                text: '评估项目',
+              },
+              line: {
+                style: {
+                  stroke: '#ddd',
+                  lineWidth: 1,
+                },
+              },
+              tickLine: {
+                style: {
+                  stroke: '#ddd',
+                },
+              },
+              label: {
+                autoHide: true,
+                autoRotate: false,
+                offset: 10,
+              },
+              grid: null,
+            },
+            legend: {
+              position: 'top',
+            },
+            smooth: true,
+            animation: {
+              appear: {
+                animation: 'fade-in',
+                duration: 1000,
+              },
+            },
+            color: COLOR_PLATE,
+            point: {
+              size: 5,
+              shape: 'circle',
+              style: {
+                fill: 'white',
+                stroke: '#5AD8A6',
+                lineWidth: 2,
+              },
+            },
+          });
+          scoreChart.render();
+          scoreChartRef.current = scoreChart;
+        }
+      }, 150);
+    }
+      return () => {
+      mounted = false;
+      if (avgChartRef.current) {
+        avgChartRef.current.destroy();
+        avgChartRef.current = null;
+      }
+      if (scoreChartRef.current) {
+        scoreChartRef.current.destroy();
+        scoreChartRef.current = null;
+      }
+    };
+  }, [compareData, isCompareModalVisible]);
+
   const handleCompareModalClose = () => {
+    // 关闭模态框时销毁图表实例
+    if (avgChartRef.current) {
+      avgChartRef.current.destroy();
+      avgChartRef.current = null;
+    }
+    if (scoreChartRef.current) {
+      scoreChartRef.current.destroy();
+      scoreChartRef.current = null;
+    }
     setIsCompareModalVisible(false);
     setCompareData(null);
   };
@@ -403,71 +663,26 @@ export default function AssessmentsPage() {
       >
         {compareData && (
           <div>
-            <h3 className="mb-4">均分对比</h3>
-            <div style={{
-              width: '100%',
-              height: 400,
-  
-
-            }}>
-              <Radar
-                data={[
-                  ...(compareData.nowAvgAssessment?.map(item => ({ ...item, type: '当前' })) || []),
-                  ...(compareData.oldAvgAssessment?.map(item => ({ ...item, type: '对比' })) || [])
-                ]}
-                xField="name"
-                yField="value"
-                seriesField="type"
-                meta={{
-                  value: {
-                    min: 0,
-                    max: 5
-                  }
+            <div className="mb-6">
+              <h3 className="text-lg font-medium mb-2">平均评估对比</h3>
+              <div 
+                id="avgAssessmentChart" 
+                style={{
+                  width: '100%',
+                  height: 400,
                 }}
-                xAxis={{
-                  line: null,
-                  tickLine: null
-                }}
-                yAxis={{
-                  label: false,
-                  grid: {
-                    alternateColor: 'rgba(0, 0, 0, 0.04)'
-                  }
-                }}
-                point={{}}
-                area={{}}
               />
             </div>
 
-
-            <h3 className="mt-8 mb-4">总分对比</h3>
-            <div style={{
-              width: '100%',
-              height: 400,
-  
-
-            }}>
-            <Radar
-              data={[
-                ...(compareData.nowAssessmentScore?.map(item => ({ ...item, type: '当前' })) || []),
-                ...(compareData.oldAssessmentScore?.map(item => ({ ...item, type: '对比' })) || [])
-              ]}
-              xField="name"
-              yField="value"
-              seriesField="type"
-              xAxis={{
-                line: null,
-                tickLine: null
-              }}
-              yAxis={{
-                label: false,
-                grid: {
-                  alternateColor: 'rgba(0, 0, 0, 0.04)'
-                }
-              }}
-              point={{}}
-              area={{}}
-            />
+            <div>
+              <h3 className="text-lg font-medium mb-2">评估分数对比</h3>
+              <div 
+                id="assessmentScoreChart" 
+                style={{
+                  width: '100%',
+                  height: 400,
+                }}
+              />
             </div>
           </div>
         )}

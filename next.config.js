@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-}
+  transpilePackages: [
+    '@antv/g2plot',
+    '@antv/g2',
+    '@antv/g-canvas',
+    '@antv/util'
+  ]
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
