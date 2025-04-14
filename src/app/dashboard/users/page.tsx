@@ -300,25 +300,25 @@ export default () => {
           >
             新建
           </Button>,
-          <Dropdown
-            key="menu"
-            menu={{
-              items: [
-                {
-                  label: '批量导入',
-                  key: 'import',
-                },
-                {
-                  label: '导出数据',
-                  key: 'export',
-                },
-              ],
-            }}
-          >
-            <Button>
-              <EllipsisOutlined />
-            </Button>
-          </Dropdown>,
+          // <Dropdown
+          //   key="menu"
+          //   menu={{
+          //     items: [
+          //       {
+          //         label: '批量导入',
+          //         key: 'import',
+          //       },
+          //       {
+          //         label: '导出数据',
+          //         key: 'export',
+          //       },
+          //     ],
+          //   }}
+          // >
+          //   <Button>
+          //     <EllipsisOutlined />
+          //   </Button>
+          // </Dropdown>,
         ]}
       />
       <Modal
