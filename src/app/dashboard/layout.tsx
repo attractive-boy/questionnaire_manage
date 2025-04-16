@@ -12,8 +12,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const currentPathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [userRole, setUserRole] = useState<string>('');
   
-  const [menuItems, setMenuItems] = useState([
+  // 定义所有可能的菜单项
+  const allMenuItems = [
     {
       path: '/dashboard/users',
       name: '用户管理',
@@ -36,13 +38,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       icon: <DatabaseOutlined />,
     },
     {
-      path: '/dashboard/settings',
-      name: '系统设置',
+      path: '/dashboard/authorization',
+      name: '授权管理',
       icon: <SettingOutlined />,
-    },
-  ]);
+    }
+  ];
+  
+  // 根据用户角色过滤菜单项
+  const [menuItems, setMenuItems] = useState<any[]>([]);
 
+  // 根据用户角色和问卷列表更新菜单
   useEffect(() => {
+    // 根据用户角色过滤菜单项
+    let filteredItems = [];
+    
+    if (userRole === 'admin') {
+      // 管理员可以看到所有菜单
+      filteredItems = [...allMenuItems];
+    } else {
+      // 普通用户只能看到用户管理和答题记录
+      filteredItems = allMenuItems.filter(item => 
+        item.path === '/dashboard/users' || item.path === '/dashboard/assessments'
+      );
+    }
+    
+    setMenuItems(filteredItems);
+  }, [userRole]);
+  
+  // 获取问卷列表并更新菜单
+  useEffect(() => {
+    // 只有管理员需要加载问卷列表
+    if (userRole !== 'admin') return;
+    
     const fetchQuestionnaires = async () => {
       try {
         const response: any = await api.get('/admin/assessment-form/list');
@@ -72,13 +99,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
 
     fetchQuestionnaires();
-  }, []);
+  }, [userRole]);
 
   useEffect(() => {
     // 检查登录状态
     if (!isLoggedIn()) {
       router.push('/');
+      return;
     }
+    
+    // 获取当前用户信息
+    const fetchUserInfo = async () => {
+      try {
+        const response: any = await api.get('/manager/user/query-by-user-id');
+        if (response.success && response.data) {
+          setUserRole(response.data.role);
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+      }
+    };
+    
+    fetchUserInfo();
     setMounted(true);
   }, [router]);
 
