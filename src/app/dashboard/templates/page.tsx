@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { message, Modal, Form, Input } from 'antd';
+import { message, Modal, Form, Input, Typography } from 'antd';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import api from '../../../utils/api';
@@ -151,6 +151,9 @@ export default function TemplatesPage() {
           >
             <Input.TextArea rows={4} />
           </Form.Item>
+          <Typography.Text type="danger" style={{ fontSize: '12px' }}>
+            注：{'{}'} 为数据占位符，生成干预建议的时候会替换为实际数值。此符号在模板内容的位置不可变，否则干预建议将混乱。
+          </Typography.Text>
         </Form>
       </Modal>
     </div>

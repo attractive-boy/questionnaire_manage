@@ -389,6 +389,7 @@ export default function AssessmentsPage() {
       fieldProps: {
         placeholder: '请选择问卷',
       },
+      width: 300,
       valueType: 'select',
       request: async () => {
         try {
@@ -631,15 +632,9 @@ export default function AssessmentsPage() {
               <Descriptions.Item label="问卷名称">{detailData.formName}</Descriptions.Item>
               <Descriptions.Item label="儿童姓名">{detailData.chileName}</Descriptions.Item>
               <Descriptions.Item label="联系电话">{detailData.phone}</Descriptions.Item>
-              <Descriptions.Item label="状态">
-                {detailData.status === '1' ? (
-                  <Tag color="success">已完成</Tag>
-                ) : (
-                  <Tag color="processing">进行中</Tag>
-                )}
-              </Descriptions.Item>
+              <Descriptions.Item label="状态">{detailData.status}</Descriptions.Item>
               <Descriptions.Item label="开始答题时间">{detailData.createTime}</Descriptions.Item>
-              <Descriptions.Item label="修改时间">{detailData.updateTime}</Descriptions.Item>
+              <Descriptions.Item label="修改时间">{detailData.updateTime.replace("T"," ")}</Descriptions.Item>
             </Descriptions>
 
             <h3 className="mt-4 mb-2">答题结果</h3>
