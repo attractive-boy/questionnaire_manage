@@ -130,7 +130,12 @@ export default () => {
     {
       title: '创建时间',
       dataIndex: 'createTime',
-      valueType: 'dateRange',
+      hideInSearch: true,
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createTimeRange',
+      valueType: 'dateTimeRange',
       search: {
         transform: (value) => {
           return {
@@ -139,8 +144,9 @@ export default () => {
           };
         },
       },
-      sorter: true,
+      sorter: false,
       hideInSearch: false,
+      hideInTable: true,
     },
     {
       title: '操作',
