@@ -563,7 +563,7 @@ export default function AssessmentsPage() {
           score: {
             alias: '得分',
             min: 0,
-            max: 1,
+            max: 2,
           },
         },
         xAxis: {
@@ -603,6 +603,7 @@ export default function AssessmentsPage() {
         },
         color: ['#007bff'],
         columnWidthRatio: 0.6,
+        minColumnWidth: 50,
         label: {
           position: 'middle',
           layout: [
