@@ -2,9 +2,10 @@
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Input, Space, Tag, message, Modal, Form, Select } from 'antd';
+import { Button, Input, Space, Tag, Modal, Form, Select } from 'antd';
 import { useRef, useState } from 'react';
 import api from '../../../utils/api';
+import { getMessage } from '../../../utils/message';
 
 type ManagerUserItem = {
   id: string;
@@ -21,6 +22,7 @@ export default () => {
   const [form] = Form.useForm();
   const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState<string | null>(null);
+  const message = getMessage();
   
   const columns: ProColumns<ManagerUserItem>[] = [
     {

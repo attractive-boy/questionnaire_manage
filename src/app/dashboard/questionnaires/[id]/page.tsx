@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Typography, message, Modal, Form, Input, Descriptions } from 'antd';
+import { Typography, Modal, Form, Input, Descriptions } from 'antd';
 import { ProCard, ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import api from '../../../../utils/api';
 import { useParams } from 'next/navigation';
+import { getMessage } from '../../../../utils/message';
 
 const { Title } = Typography;
 
@@ -41,6 +42,7 @@ export default function QuestionnairePage() {
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [questionDetail, setQuestionDetail] = useState<QuestionDetail | null>(null);
   const [form] = Form.useForm();
+  const message = getMessage();
 
   useEffect(() => {
     const idToNameMap = localStorage.getItem('questionnaireIdToNameMap');

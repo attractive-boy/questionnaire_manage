@@ -7,6 +7,7 @@ import { Button, message, Tag, Space, Modal, Table, Descriptions, Form, Input } 
 import { Line, Radar, Column } from '@antv/g2plot';
 import { uniq, findIndex } from '@antv/util';
 import api from '../../../utils/api';
+import { getMessage } from '../../../utils/message';
 
 type AssessmentRecord = {
   id: string;
@@ -64,6 +65,7 @@ export default function AssessmentsPage() {
   const scoreChartRef = useRef<Line | null>(null);
   const radarChartRef = useRef<Radar | null>(null);
   const columnChartRef = useRef<Column | null>(null);
+  const message = getMessage();
 
   const handleCompare = async (type: '1' | '2', id: string) => {
     try {
@@ -351,6 +353,12 @@ export default function AssessmentsPage() {
       // 获取formName对应的formId
       const formName = searchParams.formName;
 
+      //没选就弹出提示
+      if (!formName) {
+        message.error('请选择问卷');
+        return;
+      }
+
       const params: any = {
         ...(formName && { formId: formName }),
         ...(searchParams?.phone && { phone: searchParams.phone }),
@@ -361,13 +369,7 @@ export default function AssessmentsPage() {
 
       console.log('导出参数:', params); // 添加调试日志
 
-      const response: any = await api.get('/admin/assessment/download-answers', { params });
-      if (response.success) {
-        message.success('下载成功');
-        window.open(response.data.downloadUrl);
-      } else {
-        message.error('下载失败');
-      }
+      window.open("https://hearttestback.djjp.cn/admin/assessment/download-answers" + "?" + new URLSearchParams(params).toString(), "_blank");
     } catch (error) {
       console.error('下载答题记录失败:', error);
       message.error('下载答题记录失败，请重试');
@@ -944,7 +946,7 @@ export default function AssessmentsPage() {
         dateFormatter="string"
         toolBarRender={() => [
           <Button key="export" onClick={handleDownloadAnswers}>
-            导出
+            导出选项内容
           </Button>
         ]}
       />

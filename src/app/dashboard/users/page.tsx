@@ -2,9 +2,10 @@
 import { EllipsisOutlined, PlusOutlined,EyeOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
-import { Button, Dropdown, Space, Modal, message, Descriptions,Tag,Image } from 'antd';
+import { Button, Dropdown, Space, Modal, Descriptions,Tag,Image } from 'antd';
 import { useRef, useState } from 'react';
 import api from '../../../utils/api';
+import { getMessage } from '../../../utils/message';
 
 type UserItem = {
   id: string;
@@ -29,6 +30,7 @@ export default () => {
   const [userIdToDelete, setUserIdToDelete] = useState<string | null>(null);
   const [isUnbanConfirmVisible, setIsUnbanConfirmVisible] = useState(false);
   const [userIdToUnban, setUserIdToUnban] = useState<string | null>(null);
+  const message = getMessage();
   
   const columns: ProColumns<UserItem>[] = [
     {

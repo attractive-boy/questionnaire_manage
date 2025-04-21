@@ -5,6 +5,7 @@ import { message, Modal, Form, Input, Typography } from 'antd';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import api from '../../../utils/api';
+import { getMessage } from '../../../utils/message';
 
 type Template = {
   id: string;
@@ -18,6 +19,7 @@ export default function TemplatesPage() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentTemplate, setCurrentTemplate] = useState<Template | null>(null);
   const [form] = Form.useForm();
+  const message = getMessage();
 
   const columns: ProColumns<Template>[] = [
     {
