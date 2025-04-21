@@ -548,7 +548,7 @@ export default function AssessmentsPage() {
     // 准备直方图数据
     const columnData = data.map(item => ({
       category: item.category,
-      score: item.averageScore,
+      score: item.acheiveLevel,
       level: item.acheiveLevel,
     }));
 
