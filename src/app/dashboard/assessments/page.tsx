@@ -2,9 +2,9 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { ProTable } from '@ant-design/pro-components';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { Button, message, Tag, Space, Modal, Table, Descriptions, Form, Input } from 'antd';
-import { Line } from '@antv/g2plot';
+import { Line, Radar, Column } from '@antv/g2plot';
 import { uniq, findIndex } from '@antv/util';
 import api from '../../../utils/api';
 
@@ -56,9 +56,14 @@ export default function AssessmentsPage() {
   const [detailData, setDetailData] = useState<AssessmentDetail | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [currentResult, setCurrentResult] = useState<AssessmentResult | null>(null);
-  const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
+  const searchFormRef = useRef<ProFormInstance | undefined>(undefined);
   const [compareData, setCompareData] = useState<CompareData | null>(null);
   const [isCompareModalVisible, setIsCompareModalVisible] = useState(false);
+  const avgChartRef = useRef<Line | null>(null);
+  const scoreChartRef = useRef<Line | null>(null);
+  const radarChartRef = useRef<Radar | null>(null);
+  const columnChartRef = useRef<Column | null>(null);
 
   const handleCompare = async (type: '1' | '2', id: string) => {
     try {
@@ -77,10 +82,6 @@ export default function AssessmentsPage() {
       message.error('获取对比数据失败');
     }
   };
-
-  // 存储图表实例的引用
-  const avgChartRef = useRef<Line | null>(null);
-  const scoreChartRef = useRef<Line | null>(null);
 
   // 渲染平均评估对比图表
   useEffect(() => {
@@ -315,7 +316,7 @@ export default function AssessmentsPage() {
         }
       }, 150);
     }
-      return () => {
+    return () => {
       mounted = false;
       if (avgChartRef.current) {
         avgChartRef.current.destroy();
@@ -342,6 +343,36 @@ export default function AssessmentsPage() {
     setCompareData(null);
   };
 
+  const handleDownloadAnswers = async () => {
+    try {
+      const searchParams = searchFormRef.current?.getFieldsValue() || {};
+      console.log('搜索参数:', searchParams); // 添加调试日志
+      
+      // 获取formName对应的formId
+      const formName = searchParams.formName;
+
+      const params: any = {
+        ...(formName && { formId: formName }),
+        ...(searchParams?.phone && { phone: searchParams.phone }),
+        ...(searchParams?.childName && { childName: searchParams.childName }),
+        ...(searchParams?.queryStartTime && { queryStartTime: searchParams.queryStartTime }),
+        ...(searchParams?.queryEndTime && { queryEndTime: searchParams.queryEndTime }),
+      };
+
+      console.log('导出参数:', params); // 添加调试日志
+
+      const response: any = await api.get('/admin/assessment/download-answers', { params });
+      if (response.success) {
+        message.success('下载成功');
+        window.open(response.data.downloadUrl);
+      } else {
+        message.error('下载失败');
+      }
+    } catch (error) {
+      console.error('下载答题记录失败:', error);
+      message.error('下载答题记录失败，请重试');
+    }
+  };
 
   const columns: ProColumns<AssessmentRecord>[] = [
     {
@@ -485,6 +516,11 @@ export default function AssessmentsPage() {
       if (response.success && response.data) {
         setDetailData(response.data);
         setIsModalVisible(true);
+        
+        // 在下一个事件循环中初始化图表
+        setTimeout(() => {
+          initCharts(response.data.assessmentResultRespVOList);
+        }, 100);
       } else {
         message.error('获取答题记录详情失败');
       }
@@ -494,13 +530,161 @@ export default function AssessmentsPage() {
     }
   };
 
+  const initCharts = (data: AssessmentResult[]) => {
+    // 销毁之前的图表实例
+    if (radarChartRef.current) {
+      radarChartRef.current.destroy();
+    }
+    if (columnChartRef.current) {
+      columnChartRef.current.destroy();
+    }
+
+    // 准备雷达图数据
+    const radarData = data.map(item => ({
+      item: item.category,
+      score: item.averageScore,
+    }));
+
+    // 准备直方图数据
+    const columnData = data.map(item => ({
+      category: item.category,
+      score: item.averageScore,
+      level: item.acheiveLevel,
+    }));
+
+    // 初始化雷达图
+    const radarContainer = document.getElementById('radarChart');
+    if (radarContainer) {
+      const radar = new Radar(radarContainer, {
+        data: radarData,
+        xField: 'item',
+        yField: 'score',
+        meta: {
+          score: {
+            alias: '得分',
+            min: 0,
+            max: 1,
+          },
+        },
+        xAxis: {
+          line: null,
+          tickLine: null,
+        },
+        yAxis: {
+          label: false,
+          grid: {
+            alternateColor: 'rgba(0, 0, 0, 0.04)',
+          },
+        },
+        point: {
+          size: 2,
+        },
+        area: {
+          style: {
+            fill: 'rgba(0, 0, 0, 0.2)',
+          },
+        },
+      });
+      radar.render();
+      radarChartRef.current = radar;
+    }
+
+    // 初始化直方图
+    const columnContainer = document.getElementById('columnChart');
+    if (columnContainer) {
+      const column = new Column(columnContainer, {
+        data: columnData,
+        xField: 'category',
+        yField: 'score',
+        seriesField: 'level',
+        isGroup: true,
+        columnStyle: {
+          radius: [4, 4, 0, 0],
+        },
+        color: ['#007bff'],
+        columnWidthRatio: 0.6,
+        label: {
+          position: 'middle',
+          layout: [
+            { type: 'interval-adjust-position' },
+            { type: 'interval-hide-overlap' },
+            { type: 'adjust-color' },
+          ],
+          style: {
+            fill: '#fff',
+            fontSize: 12,
+          },
+        },
+        xAxis: {
+          label: {
+            autoHide: true,
+            autoRotate: false,
+            style: {
+              fill: '#666',
+              fontSize: 12,
+            },
+          },
+        },
+        yAxis: {
+          label: {
+            style: {
+              fill: '#666',
+              fontSize: 12,
+            },
+          },
+          grid: {
+            line: {
+              style: {
+                stroke: '#f0f0f0',
+                lineDash: [4, 4],
+              },
+            },
+          },
+        },
+        legend: false,
+        tooltip: {
+          domStyles: {
+            'g2-tooltip': {
+              backgroundColor: 'rgba(255, 255, 255, 0.96)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              padding: '8px 12px',
+              borderRadius: '4px',
+            },
+          },
+        },
+        interactions: [
+          {
+            type: 'element-active',
+          },
+        ],
+        animation: {
+          appear: {
+            animation: 'fade-in',
+            duration: 1000,
+          },
+        },
+      });
+      column.render();
+      columnChartRef.current = column;
+    }
+  };
+
   const handleModalClose = () => {
     setIsModalVisible(false);
+    // 销毁图表实例
+    if (radarChartRef.current) {
+      radarChartRef.current.destroy();
+      radarChartRef.current = null;
+    }
+    if (columnChartRef.current) {
+      columnChartRef.current.destroy();
+      columnChartRef.current = null;
+    }
   };
 
   const handleEditSuggestion = (record: AssessmentResult) => {
     setCurrentResult(record);
-    form.setFieldsValue({
+    editForm.setFieldsValue({
       interventionSuggestion: record.interventionSuggestion,
       interventionSuggestionLevel: record.interventionSuggestionLevel
     });
@@ -513,7 +697,7 @@ export default function AssessmentsPage() {
 
   const handleEditSubmit = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await editForm.validateFields();
       if (currentResult) {
         const response: any = await api.post('/admin/assessment/updateInterventionSuggestion', {
           id: currentResult.id,
@@ -601,7 +785,7 @@ export default function AssessmentsPage() {
         onCancel={handleEditModalClose}
         onOk={handleEditSubmit}
       >
-        <Form form={form} layout="vertical">
+        <Form form={editForm} layout="vertical">
           <Form.Item
             name="interventionSuggestion"
             label="评分等级一：干预建议"
@@ -623,7 +807,7 @@ export default function AssessmentsPage() {
         title="答题记录详情"
         open={isModalVisible}
         onCancel={handleModalClose}
-        width={1000}
+        width={1200}
         footer={null}
       >
         {detailData && (
@@ -636,6 +820,29 @@ export default function AssessmentsPage() {
               <Descriptions.Item label="开始答题时间">{detailData.createTime}</Descriptions.Item>
               <Descriptions.Item label="修改时间">{detailData.updateTime.replace("T"," ")}</Descriptions.Item>
             </Descriptions>
+
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-lg font-medium mb-2">雷达图</h3>
+                <div 
+                  id="radarChart" 
+                  style={{
+                    width: '100%',
+                    height: 400,
+                  }}
+                />
+              </div>
+              <div>
+                <h3 className="text-lg font-medium mb-2">直方图</h3>
+                <div 
+                  id="columnChart" 
+                  style={{
+                    width: '100%',
+                    height: 400,
+                  }}
+                />
+              </div>
+            </div>
 
             <h3 className="mt-4 mb-2">答题结果</h3>
             <Table
@@ -685,6 +892,7 @@ export default function AssessmentsPage() {
 
       <ProTable<AssessmentRecord>
         actionRef={actionRef}
+        formRef={searchFormRef}
         columns={columns}
         request={async (params = {}, sort, filter) => {
           const { current, pageSize, ...restParams } = params;
@@ -717,12 +925,27 @@ export default function AssessmentsPage() {
           labelWidth: 120,
           defaultCollapsed: false,
         }}
+        form={{
+          syncToUrl: (values, type) => {
+            if (type === 'get') {
+              return {
+                ...values,
+                created_at: [values.startTime, values.endTime],
+              };
+            }
+            return values;
+          },
+        }}
         pagination={{
           pageSize: 10,
           showSizeChanger: true,
         }}
         dateFormatter="string"
-        toolBarRender={() => []}
+        toolBarRender={() => [
+          <Button key="export" onClick={handleDownloadAnswers}>
+            导出
+          </Button>
+        ]}
       />
     </div>
   );
