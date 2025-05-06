@@ -74,6 +74,10 @@ export default function AssessmentsPage() {
       });
 
       if (response.success && response.data) {
+        if (!response.data.oldAvgAssessment) {
+          message.error('本次是第一次测评！');
+          return;
+        }
         setCompareData(response.data);
         setIsCompareModalVisible(true);
       } else {
@@ -107,6 +111,7 @@ export default function AssessmentsPage() {
           value: item.value
         });
       });
+      
       compareData.oldAvgAssessment.forEach(item => {
         avgData.push({
           category: item.name,
@@ -500,10 +505,10 @@ export default function AssessmentsPage() {
           查看详情
         </a>,
         <a key="compare1" onClick={() => handleCompare('1', record.id)} style={{ marginLeft: 8 }}>
-          上次比较
+          和上次作答比较
         </a>,
         <a key="compare2" onClick={() => handleCompare('2', record.id)} style={{ marginLeft: 8 }}>
-          首次比较
+          和首次作答比较
         </a>
       ],
     },
@@ -548,11 +553,21 @@ export default function AssessmentsPage() {
     }));
 
     // 准备直方图数据
-    const columnData = data.map(item => ({
-      category: item.category,
-      score: item.acheiveLevel,
-      level: item.acheiveLevel,
-    }));
+    const columnData = data.map(item => {
+      // 排除特定维度的等级计算
+      if (['不能社交', '学习障碍', '情绪障碍'].includes(item.category)) {
+        return {
+          category: item.category,
+          score: null, // 设置为null表示不显示等级
+          level: null
+        };
+      }
+      return {
+        category: item.category,
+        score: item.acheiveLevel,
+        level: item.acheiveLevel,
+      };
+    });
 
     // 初始化雷达图
     const radarContainer = document.getElementById('radarChart');
@@ -748,12 +763,19 @@ export default function AssessmentsPage() {
       title: '达到等级',
       dataIndex: 'acheiveLevel',
       key: 'acheiveLevel',
+      render: (text: number, record: AssessmentResult) => {
+        if (['不能社交', '学习障碍', '情绪障碍'].includes(record.category)) {
+          return '-';
+        }
+        return text;
+      }
     },
     {
       title: '评分等级一：干预建议',
       dataIndex: 'interventionSuggestion',
       key: 'interventionSuggestion',
-      ellipsis: true,
+      width: 200,
+      style: { whiteSpace: 'normal' }
     },
     {
       title: '萌芽等级',
@@ -764,7 +786,8 @@ export default function AssessmentsPage() {
       title: '评分等级二：干预建议',
       dataIndex: 'interventionSuggestionLevel',
       key: 'interventionSuggestionLevel',
-      ellipsis: true,
+      width: 200,
+      style: { whiteSpace: 'normal' }
     },
     {
       title: '反向选择经常的数量',
@@ -853,7 +876,8 @@ export default function AssessmentsPage() {
               columns={resultColumns}
               rowKey="id"
               pagination={false}
-              scroll={{ x: 'max-content' }}
+              scroll={{ x: 'max-content', y: 400 }}
+              style={{ whiteSpace: 'normal' }}
             />
           </div>
         )}
@@ -869,7 +893,7 @@ export default function AssessmentsPage() {
         {compareData && (
           <div>
             <div className="mb-6">
-              <h3 className="text-lg font-medium mb-2">平均评估对比</h3>
+              <h3 className="text-lg font-medium mb-2">平均分评估对比</h3>
               <div 
                 id="avgAssessmentChart" 
                 style={{
@@ -880,7 +904,7 @@ export default function AssessmentsPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium mb-2">评估分数对比</h3>
+              <h3 className="text-lg font-medium mb-2">总评估分数对比</h3>
               <div 
                 id="assessmentScoreChart" 
                 style={{
