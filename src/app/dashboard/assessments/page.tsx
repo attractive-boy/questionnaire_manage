@@ -8,6 +8,9 @@ import { Line, Radar, Column } from '@antv/g2plot';
 import { uniq, findIndex } from '@antv/util';
 import api from '../../../utils/api';
 import { getMessage } from '../../../utils/message';
+import { PrinterOutlined } from '@ant-design/icons';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 type AssessmentRecord = {
   id: string;
@@ -803,6 +806,10 @@ export default function AssessmentsPage() {
     },
   ];
 
+  const handlePrint = async () => {
+    
+  };
+
   return (
     <div className="p-6">
       <Modal
@@ -834,10 +841,14 @@ export default function AssessmentsPage() {
         open={isModalVisible}
         onCancel={handleModalClose}
         width={1200}
-        footer={null}
+        footer={[
+          // <Button key="print" type="primary" icon={<PrinterOutlined />} onClick={handlePrint}>
+          //   打印
+          // </Button>
+        ]}
       >
         {detailData && (
-          <div>
+          <div className="print-content">
             <Descriptions bordered column={2}>
               <Descriptions.Item label="问卷名称">{detailData.formName}</Descriptions.Item>
               <Descriptions.Item label="儿童姓名">{detailData.chileName}</Descriptions.Item>
@@ -876,7 +887,7 @@ export default function AssessmentsPage() {
               columns={resultColumns}
               rowKey="id"
               pagination={false}
-              scroll={{ x: 'max-content', y: 400 }}
+              scroll={{ x: 'max-content' }}
               style={{ whiteSpace: 'normal' }}
             />
           </div>

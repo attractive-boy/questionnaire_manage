@@ -15,6 +15,8 @@ type UserItem = {
   processStatus: string;
   profilePath: string;
   createTime: string;
+  organizationName: string;
+  organizationType: string;
 };
 
 
@@ -133,6 +135,23 @@ export default () => {
       title: '创建时间',
       dataIndex: 'createTime',
       hideInSearch: true,
+    },
+    {
+      title: '机构名称',
+      dataIndex: 'organizationName',
+      ellipsis: true,
+    },
+    {
+      title: '机构类型',
+      dataIndex: 'organizationType',
+      ellipsis: true,
+      valueType: 'select',
+      valueEnum: {
+        '机构': { text: '机构' },
+        '小学': { text: '小学' },
+        '幼儿园': { text: '幼儿园' },
+        '医院': { text: '医院' },
+      },
     },
     {
       title: '创建时间',
