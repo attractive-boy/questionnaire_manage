@@ -807,7 +807,57 @@ export default function AssessmentsPage() {
   ];
 
   const handlePrint = async () => {
-    
+    try {
+      const element = document.querySelector('.print-content') as HTMLElement;
+      if (!element) return;
+
+      // 增加等待时间，确保所有内容都完全渲染
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+
+      const canvas = await html2canvas(element, {
+        scale: 2, // 提高清晰度
+        useCORS: true, // 允许加载跨域图片
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: 1200, // 设置固定宽度
+        height: element.scrollHeight,
+        scrollY: 0,
+        scrollX: 0,
+        onclone: (clonedDoc) => {
+          // 在克隆的文档中确保图表容器有正确的高度
+          const radarContainer = clonedDoc.getElementById('radarChart');
+          const columnContainer = clonedDoc.getElementById('columnChart');
+          if (radarContainer && columnContainer) {
+            radarContainer.style.height = '400px';
+            columnContainer.style.height = '400px';
+          }
+
+          // 确保表格内容完全显示
+          const table = clonedDoc.querySelector('table');
+          if (table) {
+            table.style.width = '100%';
+            table.style.display = 'table';
+          }
+
+          // 确保所有内容都可见
+          const clonedElement = clonedDoc.querySelector('.print-content') as HTMLElement;
+          if (clonedElement) {
+            clonedElement.style.width = '1200px';
+            clonedElement.style.overflow = 'visible';
+          }
+        }
+      });
+
+      // 创建下载链接
+      const link = document.createElement('a');
+      link.download = `测评详情_${detailData?.chileName || '未知'}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+    } catch (error) {
+      console.error('生成图片失败:', error);
+      message.error('生成图片失败');
+    }
   };
 
   return (
@@ -842,13 +892,13 @@ export default function AssessmentsPage() {
         onCancel={handleModalClose}
         width={1200}
         footer={[
-          // <Button key="print" type="primary" icon={<PrinterOutlined />} onClick={handlePrint}>
-          //   打印
-          // </Button>
+          <Button key="print" type="primary" icon={<PrinterOutlined />} onClick={handlePrint}>
+            打印
+          </Button>
         ]}
       >
         {detailData && (
-          <div className="print-content">
+          <div className="print-content" style={{ padding: '24px' }}>
             <Descriptions bordered column={2}>
               <Descriptions.Item label="问卷名称">{detailData.formName}</Descriptions.Item>
               <Descriptions.Item label="儿童姓名">{detailData.chileName}</Descriptions.Item>
@@ -858,37 +908,50 @@ export default function AssessmentsPage() {
               <Descriptions.Item label="修改时间">{detailData.updateTime.replace("T"," ")}</Descriptions.Item>
             </Descriptions>
 
-            <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="mt-8 grid grid-cols-2 gap-8">
               <div>
-                <h3 className="text-lg font-medium mb-2">雷达图</h3>
+                <h3 className="text-lg font-medium mb-4">雷达图</h3>
                 <div 
                   id="radarChart" 
                   style={{
                     width: '100%',
                     height: 400,
+                    padding: '16px',
+                    backgroundColor: '#fff',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
                   }}
                 />
               </div>
               <div>
-                <h3 className="text-lg font-medium mb-2">直方图</h3>
+                <h3 className="text-lg font-medium mb-4">直方图</h3>
                 <div 
                   id="columnChart" 
                   style={{
                     width: '100%',
                     height: 400,
+                    padding: '16px',
+                    backgroundColor: '#fff',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
                   }}
                 />
               </div>
             </div>
 
-            <h3 className="mt-4 mb-2">答题结果</h3>
+            <h3 className="mt-8 mb-4 text-lg font-medium">答题结果</h3>
             <Table
               dataSource={detailData.assessmentResultRespVOList}
               columns={resultColumns}
               rowKey="id"
               pagination={false}
               scroll={{ x: 'max-content' }}
-              style={{ whiteSpace: 'normal' }}
+              style={{ 
+                whiteSpace: 'normal',
+                backgroundColor: '#fff',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+              }}
             />
           </div>
         )}
