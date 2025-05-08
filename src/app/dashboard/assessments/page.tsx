@@ -565,8 +565,10 @@ export default function AssessmentsPage() {
           level: null
         };
       }
+      // 每两个字符后添加换行符
+      const formattedCategory = item.category.replace(/(.{2})/g, '$1\n').trim();
       return {
-        category: item.category,
+        category: formattedCategory,
         score: item.acheiveLevel,
         level: item.acheiveLevel,
       };
@@ -624,22 +626,18 @@ export default function AssessmentsPage() {
         color: ['#007bff'],
         columnWidthRatio: 0.6,
         minColumnWidth: 50,
-        label: {
-          position: 'middle',
-          layout: [
-            { type: 'interval-adjust-position' },
-            { type: 'interval-hide-overlap' },
-            { type: 'adjust-color' },
-          ],
-          style: {
-            fill: '#fff',
-            fontSize: 12,
-          },
-        },
+        label: false,
         xAxis: {
+          title: {
+            text: '（维度）',
+            style: {
+              fill: '#666',
+              fontSize: 12,
+            },
+          },
+          line: null,
+          tickLine: null,
           label: {
-            autoHide: true,
-            autoRotate: false,
             style: {
               fill: '#666',
               fontSize: 12,
@@ -647,6 +645,13 @@ export default function AssessmentsPage() {
           },
         },
         yAxis: {
+          title: {
+            text: '（等级）',
+            style: {
+              fill: '#666',
+              fontSize: 12,
+            },
+          },
           label: {
             style: {
               fill: '#666',
@@ -659,6 +664,17 @@ export default function AssessmentsPage() {
                 stroke: '#f0f0f0',
                 lineDash: [4, 4],
               },
+            },
+          },
+          line: {
+            style: {
+              stroke: '#ddd',
+              lineWidth: 1,
+            },
+          },
+          tickLine: {
+            style: {
+              stroke: '#ddd',
             },
           },
         },
