@@ -722,13 +722,14 @@ export default function AssessmentsPage() {
         tooltip: {
           formatter: (datum) => {
             if (datum.type === 'potentialLevel') {
-              // 萌芽等级显示总值
-              const normalLevel = columnData.find(
-                d => d.category === datum.category && d.type === 'normalLevel'
-              )?.value || 0;
+              // 萌芽等级显示实际值
+              const potentialLevels = data.find(
+                d => d.category.replace(/(.{2})/g, '$1\n').trim() === datum.category
+              )?.potentialLevel.split(',').map(level => Number(level)) || [];
+              const maxPotentialLevel = Math.max(...potentialLevels);
               return {
                 name: '萌芽等级',
-                value: datum.value + normalLevel
+                value: maxPotentialLevel
               };
             }
             return {
