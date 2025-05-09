@@ -559,20 +559,44 @@ export default function AssessmentsPage() {
     const columnData = data.map(item => {
       // 排除特定维度的等级计算
       if (['不能社交', '学习障碍', '情绪障碍'].includes(item.category)) {
-        return {
+        const result = [];
+        result.push({
           category: item.category,
-          score: null, // 设置为null表示不显示等级
-          level: null
-        };
+          type: 'potentialLevel',
+          value: 0
+        })
+        result.push({
+          category: item.category,
+          type: 'normalLevel',
+          value: 0
+        });
+        return result;
       }
       // 每两个字符后添加换行符
       const formattedCategory = item.category.replace(/(.{2})/g, '$1\n').trim();
-      return {
+      const normalLevel = Number(item.acheiveLevel);
+      // 处理萌芽等级字符串，取最大值
+      const potentialLevels = item.potentialLevel.split(',').map(level => Number(level));
+      const maxPotentialLevel = Math.max(...potentialLevels);
+      
+      console.log(maxPotentialLevel, normalLevel, maxPotentialLevel > normalLevel);
+      
+      const result = [];
+      result.push({
         category: formattedCategory,
-        score: item.acheiveLevel,
-        level: item.acheiveLevel,
-      };
-    });
+        type: 'potentialLevel',
+        value: maxPotentialLevel > normalLevel ? maxPotentialLevel - normalLevel : 0
+      });
+
+      // 添加普通等级数据（确保在底部）
+      result.push({
+        category: formattedCategory,
+        type: 'normalLevel',
+        value: normalLevel
+      });
+
+      return result;
+    }).flat();
 
     // 初始化雷达图
     const radarContainer = document.getElementById('radarChart');
@@ -617,19 +641,19 @@ export default function AssessmentsPage() {
       const column = new Column(columnContainer, {
         data: columnData,
         xField: 'category',
-        yField: 'score',
-        seriesField: 'level',
-        isGroup: true,
+        yField: 'value',
+        seriesField: 'type',
+        isStack: true,
         columnStyle: {
           radius: [4, 4, 0, 0],
         },
-        color: ['#007bff'],
+        color: ['#a3d0ff','#007bff'],  // 萌芽等级使用浅蓝色，普通等级使用深蓝色
         columnWidthRatio: 0.6,
         minColumnWidth: 50,
         label: false,
         xAxis: {
           title: {
-            text: '（维度）',
+            text: '维度',
             style: {
               fill: '#666',
               fontSize: 12,
@@ -655,7 +679,7 @@ export default function AssessmentsPage() {
         },
         yAxis: {
           title: {
-            text: '（等级）',
+            text: '等级',
             style: {
               fill: '#666',
               fontSize: 12,
@@ -687,28 +711,32 @@ export default function AssessmentsPage() {
             },
           },
         },
-        legend: false,
-        tooltip: {
-          domStyles: {
-            'g2-tooltip': {
-              backgroundColor: 'rgba(255, 255, 255, 0.96)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-              padding: '8px 12px',
-              borderRadius: '4px',
+        legend: {
+          position: 'top',
+          itemName: {
+            formatter: (text) => {
+              return text === 'normalLevel' ? '普通等级' : '萌芽等级';
             },
           },
         },
-        interactions: [
-          {
-            type: 'element-active',
-          },
-        ],
-        animation: {
-          appear: {
-            animation: 'fade-in',
-            duration: 1000,
-          },
-        },
+        tooltip: {
+          formatter: (datum) => {
+            if (datum.type === 'potentialLevel') {
+              // 萌芽等级显示总值
+              const normalLevel = columnData.find(
+                d => d.category === datum.category && d.type === 'normalLevel'
+              )?.value || 0;
+              return {
+                name: '萌芽等级',
+                value: datum.value + normalLevel
+              };
+            }
+            return {
+              name: '普通等级',
+              value: datum.value
+            };
+          }
+        }
       });
       column.render();
       columnChartRef.current = column;
