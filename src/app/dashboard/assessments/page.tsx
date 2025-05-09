@@ -635,8 +635,17 @@ export default function AssessmentsPage() {
               fontSize: 12,
             },
           },
-          line: null,
-          tickLine: null,
+          line: {
+            style: {
+              stroke: '#ddd',
+              lineWidth: 1,
+            },
+          },
+          tickLine: {
+            style: {
+              stroke: '#ddd',
+            },
+          },
           label: {
             style: {
               fill: '#666',
