@@ -371,6 +371,7 @@ export default function AssessmentsPage() {
         ...(formName && { formId: formName }),
         ...(searchParams?.phone && { phone: searchParams.phone }),
         ...(searchParams?.childName && { childName: searchParams.childName }),
+        ...(searchParams?.organizationName && { organizationName: searchParams.organizationName }),
         ...(searchParams?.queryStartTime && { queryStartTime: searchParams.queryStartTime }),
         ...(searchParams?.queryEndTime && { queryEndTime: searchParams.queryEndTime }),
       };
@@ -408,6 +409,17 @@ export default function AssessmentsPage() {
       },
       search: {
         transform: (value) => ({ childName: value }),
+      },
+    },
+    {
+      title: '机构名称',
+      dataIndex: 'organizationName',
+      hideInTable: true,
+      fieldProps: {
+        placeholder: '请输入机构名称',
+      },
+      search: {
+        transform: (value) => ({ organizationName: value }),
       },
     },
     {
