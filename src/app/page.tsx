@@ -58,7 +58,7 @@ export default function Login() {
             priority
           />
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            问卷管理系统
+          星跃孤独症儿童干预测评管理系统
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             请登录您的账号

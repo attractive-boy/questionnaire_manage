@@ -145,7 +145,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }}
     >
       <ProLayout
-        title="问卷管理系统"
+        title="星跃孤独症儿童干预测评管理系统"
         logo={(
           <Image
             src="/logo.png"
