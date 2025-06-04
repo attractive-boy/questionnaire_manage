@@ -814,20 +814,7 @@ export default function AssessmentsPage() {
             return {};
           }
         },
-        tooltip: {
-          formatter: (datum: any) => {
-            const nameMap = {
-              'potentialLevel': '萌芽等级',
-              'normalLevel': '达到等级',
-              'maxLevel': '达到最高',
-              'notAchieved': '未达等级'
-            };
-            return {
-              name: nameMap[datum.type as keyof typeof nameMap] || datum.type,
-              value: datum.value
-            };
-          }
-        }
+        tooltip: false
       });
       column.render();
       columnChartRef.current = column;
