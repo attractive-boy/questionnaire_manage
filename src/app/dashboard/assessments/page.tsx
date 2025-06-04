@@ -787,6 +787,7 @@ export default function AssessmentsPage() {
         },
         legend: {
           position: 'top',
+          clickable: false,
           itemName: {
             formatter: (text: any) => {
               const legendMap = {
