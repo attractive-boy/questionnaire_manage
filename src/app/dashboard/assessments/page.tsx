@@ -34,6 +34,7 @@ type AssessmentResult = {
   potentialLevel: string;
   interventionSuggestionLevel: string;
   concernReverse: number;
+  maxLevel: number;
 };
 
 type AssessmentDetail = {
@@ -572,6 +573,14 @@ export default function AssessmentsPage() {
       // 排除特定维度的等级计算
       if (['不能社交', '学习障碍', '情绪障碍'].includes(item.category)) {
         const result = [];
+        // 处理未达等级
+        result.push({
+          category: item.category,
+          type: 'notAchieved',
+          value: 0
+        })
+        
+        //处理萌芽等级
         result.push({
           category: item.category,
           type: 'potentialLevel',
@@ -582,6 +591,13 @@ export default function AssessmentsPage() {
           type: 'normalLevel',
           value: 0
         });
+
+        //处理达到最高
+        result.push({
+          category: item.category,
+          type: 'maxLevel',
+          value: 0
+        })
         return result;
       }
       // 每两个字符后添加换行符
@@ -590,10 +606,25 @@ export default function AssessmentsPage() {
       // 处理萌芽等级字符串，取最大值
       const potentialLevels = item.potentialLevel.split(',').map(level => Number(level));
       const maxPotentialLevel = Math.max(...potentialLevels);
+
+      const maxLevel = item.maxLevel;
       
       console.log(maxPotentialLevel, normalLevel, maxPotentialLevel > normalLevel);
       
       const result = [];
+
+      let notAchieved = 0;
+      if (maxLevel > Math.max(maxPotentialLevel, normalLevel)) {
+        notAchieved = maxLevel - Math.max(maxPotentialLevel, normalLevel);
+      }
+
+      //处理未达等级
+      result.push({
+        category: formattedCategory,
+        type: 'notAchieved',
+        value: notAchieved
+      })
+
       result.push({
         category: formattedCategory,
         type: 'potentialLevel',
@@ -604,8 +635,15 @@ export default function AssessmentsPage() {
       result.push({
         category: formattedCategory,
         type: 'normalLevel',
-        value: normalLevel
+        value: normalLevel == maxLevel ? 0 : normalLevel
       });
+
+      //处理达到最高
+      result.push({
+        category: formattedCategory,
+        type: 'maxLevel',
+        value: normalLevel == maxLevel ? maxLevel : 0
+      })
 
       return result;
     }).flat();
@@ -656,12 +694,34 @@ export default function AssessmentsPage() {
         yField: 'value',
         seriesField: 'type',
         isStack: true,
-        columnStyle: {
-          radius: [4, 4, 0, 0],
+        columnStyle: (datum) => {
+          // 为未达等级设置虚线框样式
+          if (datum.type === 'notAchieved') {
+            if (datum.value == 0) {
+              return {
+                radius: [4, 4, 0, 0],
+                fill: 'transparent',
+                stroke: 'transparent',
+                lineDash: [4, 4],
+                lineWidth: 2
+              };
+            }
+            return {
+              radius: [4, 4, 0, 0],
+              fill: 'transparent',
+              stroke: '#999999',
+              lineDash: [4, 4],
+              lineWidth: 2
+            };
+          }
+          return {
+            radius: [4, 4, 0, 0],
+          };
         },
-        color: ['#a3d0ff','#007bff'],  // 萌芽等级使用浅蓝色，普通等级使用深蓝色
-        columnWidthRatio: 0.6,
-        minColumnWidth: 50,
+        color: ['transparent', '#a3d0ff', '#007bff', '#0056b3'],  // 未达等级(透明)、萌芽等级、达到等级、达到最高
+        columnWidthRatio: 0.4,
+        minColumnWidth: 20,
+        maxColumnWidth: 60,
         label: false,
         xAxis: {
           title: {
@@ -687,6 +747,8 @@ export default function AssessmentsPage() {
               fill: '#666',
               fontSize: 12,
             },
+            autoHide: true,
+            autoRotate: true,
           },
         },
         yAxis: {
@@ -726,26 +788,42 @@ export default function AssessmentsPage() {
         legend: {
           position: 'top',
           itemName: {
-            formatter: (text) => {
-              return text === 'normalLevel' ? '普通等级' : '萌芽等级';
+            formatter: (text: any) => {
+              const legendMap = {
+                'potentialLevel': '萌芽等级',
+                'normalLevel': '达到等级',
+                'maxLevel': '达到最高',
+                'notAchieved': '未达等级'
+              };
+              return legendMap[text as keyof typeof legendMap] || text;
             },
           },
-        },
-        tooltip: {
-          formatter: (datum) => {
-            if (datum.type === 'potentialLevel') {
-              // 萌芽等级显示实际值
-              const potentialLevels = data.find(
-                d => d.category.replace(/(.{2})/g, '$1\n').trim() === datum.category
-              )?.potentialLevel.split(',').map(level => Number(level)) || [];
-              const maxPotentialLevel = Math.max(...potentialLevels);
+          marker: (text: any) => {
+            // 自定义图例标记样式
+            if (text === 'notAchieved') {
               return {
-                name: '萌芽等级',
-                value: maxPotentialLevel
+                symbol: 'square',
+                style: {
+                  fill: 'transparent',
+                  stroke: '#999999',
+                  lineDash: [4, 4],
+                  lineWidth: 2
+                }
               };
             }
+            return {};
+          }
+        },
+        tooltip: {
+          formatter: (datum: any) => {
+            const nameMap = {
+              'potentialLevel': '萌芽等级',
+              'normalLevel': '达到等级',
+              'maxLevel': '达到最高',
+              'notAchieved': '未达等级'
+            };
             return {
-              name: '普通等级',
+              name: nameMap[datum.type as keyof typeof nameMap] || datum.type,
               value: datum.value
             };
           }
@@ -840,7 +918,7 @@ export default function AssessmentsPage() {
       }
     },
     {
-      title: '评分等级一：干预建议',
+      title: '弱项干预建议',
       dataIndex: 'interventionSuggestion',
       key: 'interventionSuggestion',
       width: 200,
@@ -852,7 +930,7 @@ export default function AssessmentsPage() {
       key: 'potentialLevel',
     },
     {
-      title: '评分等级二：干预建议',
+      title: '努力目标建议',
       dataIndex: 'interventionSuggestionLevel',
       key: 'interventionSuggestionLevel',
       width: 200,
@@ -937,14 +1015,14 @@ export default function AssessmentsPage() {
         <Form form={editForm} layout="vertical">
           <Form.Item
             name="interventionSuggestion"
-            label="评分等级一：干预建议"
+            label="弱项干预建议"
             rules={[{ required: true, message: '请输入干预建议' }]}
           >
             <Input.TextArea rows={4} placeholder="请输入干预建议" />
           </Form.Item>
           <Form.Item
             name="interventionSuggestionLevel"
-            label="评分等级二：干预建议"
+            label="努力目标建议"
             rules={[{ required: true, message: '请输入干预建议' }]}
           >
             <Input.TextArea rows={4} placeholder="请输入干预建议" />
