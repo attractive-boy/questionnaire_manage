@@ -1170,8 +1170,10 @@ export default function AssessmentsPage() {
           },
         }}
         pagination={{
-          pageSize: 10,
+          defaultPageSize: 10,
+          pageSizeOptions: ['10', '20', '50', '100'],
           showSizeChanger: true,
+          showQuickJumper: true,
         }}
         dateFormatter="string"
         toolBarRender={() => [
