@@ -82,8 +82,8 @@ export default function TemplatesPage() {
           try {
             const response: any = await api.get('/admin/assessment-template/list', {
               params: {
-                page: current || 1,
-                size: pageSize || 10,
+                page: current,
+                size: pageSize,
                 ...restParams,
               },
             });
@@ -108,10 +108,18 @@ export default function TemplatesPage() {
           labelWidth: 'auto',
         }}
         pagination={{
-          pageSize: 10,
+          defaultPageSize: 10,
           showQuickJumper: true,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
         }}
         dateFormatter="string"
+        options={{
+          density: true,
+          fullScreen: true,
+          reload: true,
+          setting: true,
+        }}
       />
       <Modal
         title="编辑模板"
