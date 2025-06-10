@@ -41,6 +41,7 @@ type AssessmentDetail = {
   id: string;
   formName: string;
   chileName: string;
+  chileAge: number;
   phone: string;
   status: string;
   createTime: string;
@@ -994,6 +995,8 @@ export default function AssessmentsPage() {
 
   return (
     <div className="p-6">
+      
+
       <Modal
         title="修改干预建议"
         open={isEditModalVisible}
@@ -1031,13 +1034,47 @@ export default function AssessmentsPage() {
       >
         {detailData && (
           <div className="print-content" style={{ padding: '24px' }}>
+            <div className="text-center" style={{
+              marginBottom: '40px',
+              minHeight: '300px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <h1 className="text-3xl font-bold mb-8">星跃孤独症儿童干预进阶测评报告</h1>
+              <div style={{
+                width: '200px',
+                height: '200px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <img 
+                  src="/logo.png" 
+                  alt="Logo" 
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain'
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            </div>
+            
             <Descriptions bordered column={2}>
               <Descriptions.Item label="问卷名称">{detailData.formName}</Descriptions.Item>
               <Descriptions.Item label="儿童姓名">{detailData.chileName}</Descriptions.Item>
+              <Descriptions.Item label="年龄">{detailData.chileAge} 岁</Descriptions.Item>
               <Descriptions.Item label="联系电话">{detailData.phone}</Descriptions.Item>
               <Descriptions.Item label="状态">{detailData.status}</Descriptions.Item>
               <Descriptions.Item label="开始答题时间">{detailData.createTime}</Descriptions.Item>
               <Descriptions.Item label="修改时间">{detailData.updateTime.replace("T"," ")}</Descriptions.Item>
+              
             </Descriptions>
 
             <div className="mt-8 grid grid-cols-2 gap-8">
