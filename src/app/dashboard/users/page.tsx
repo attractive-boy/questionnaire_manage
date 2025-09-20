@@ -53,6 +53,20 @@ export default () => {
       },
     },
     {
+      title: "用户名",
+      dataIndex: "parentName",
+      copyable: true,
+      ellipsis: true,
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: "此项为必填项",
+          },
+        ],
+      },
+    },
+    {
       title: "手机号",
       dataIndex: "phone",
       copyable: true,
@@ -276,7 +290,7 @@ export default () => {
         columns={columns}
         actionRef={actionRef}
         cardBordered
-        request={async (params = {}, sort, filter) => {
+        request={async (params = {}) => {
           const { current, pageSize, createTime, ...restParams } = params;
           try {
             const response: any = await api.get("/admin/user/list", {
