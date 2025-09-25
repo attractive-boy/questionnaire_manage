@@ -20,11 +20,12 @@ import {
 } from "antd";
 import { Line, Radar, Column } from "@antv/g2plot";
 import { uniq, findIndex } from "@antv/util";
-import api from "../../../utils/api";
+import api, { API_BASE_URL } from "../../../utils/api";
 import { getMessage } from "../../../utils/message";
 import { PrinterOutlined } from "@ant-design/icons";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import dayjs from "dayjs";
 
 type AssessmentRecord = {
   id: string;
@@ -400,18 +401,24 @@ export default function AssessmentsPage() {
         ...(searchParams?.organizationName && {
           organizationName: searchParams.organizationName,
         }),
-        ...(searchParams?.queryStartTime && {
-          queryStartTime: searchParams.queryStartTime,
+        ...(searchParams?.createTime && {
+          queryStartTime: dayjs(searchParams.createTime[0]).format(
+            "YYYY-MM-DD HH:mm:ss"
+          ),
         }),
-        ...(searchParams?.queryEndTime && {
-          queryEndTime: searchParams.queryEndTime,
+        ...(searchParams?.createTime && {
+          queryEndTime: dayjs(searchParams.createTime[1]).format(
+            "YYYY-MM-DD HH:mm:ss"
+          ),
         }),
       };
 
       console.log("导出参数:", params); // 添加调试日志
 
       window.open(
-        "https://hearttestback.djjp.cn/admin/assessment/download-answers" +
+        API_BASE_URL +
+          "/admin/assessment/download-answers" +
+          // "https://hearttestback.djjp.cn/admin/assessment/download-answers" +
           "?" +
           new URLSearchParams(params).toString(),
         "_blank"
